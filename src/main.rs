@@ -13,7 +13,6 @@ pub mod module;
 struct Config {
     address: String,
     module_name: String,
-    module_address: String,
     backend_address: String,
 }
 
@@ -22,13 +21,13 @@ async fn main() {
     let config = match envy::from_env::<Config>() {
         Ok(c) => c,
         Err(e) => {
-            panic!("{:#?}", e);
+            panic!("Couldn't parse environment variables{}", e);
         }
     };
 
     info!("Loaded config: {:?}", config);
 
-    let module = Module::new(config.module_address, config.module_name.clone());
+    let module = Module::new(config.module_name.clone());
 
     let response = match module.register(&config.backend_address).await {
         Ok(r) => r,

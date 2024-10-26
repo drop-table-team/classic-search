@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Serialize)]
 struct RegisterPayload {
     name: String,
-    address: String,
 }
 
 #[derive(Clone, Deserialize)]
@@ -21,14 +20,12 @@ struct UnregisterPayload {}
 
 pub struct Module {
     name: String,
-    address: String,
     client: Client,
 }
 
 impl Module {
-    pub fn new<A: AsRef<str>>(address: A, name: String) -> Self {
+    pub fn new(name: String) -> Self {
         Module {
-            address: address.as_ref().to_string(),
             name,
             client: Client::new(),
         }
@@ -39,7 +36,6 @@ impl Module {
 
         let payload = RegisterPayload {
             name: self.name.clone(),
-            address: self.address.clone(),
         };
 
         let response = self
