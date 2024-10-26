@@ -1,1 +1,15 @@
-# classic-search
+# Classic Search Output Plugin
+
+This plugin provides a classical full text search that allows searching by text and tags.
+
+## Deployment
+
+The following evironment variables have to be set:
+
+```
+ADDRESS: The address that the local webserver is listening on.
+MODULE_NAME: The name of the module (in this case classic-search)
+MODULE_ADDRESS: The address on that the module can be reached from the backend
+BACKEND_ADDRESS: The address of the backend
+```
+
