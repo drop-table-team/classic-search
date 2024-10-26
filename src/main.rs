@@ -1,3 +1,5 @@
+use std::env;
+
 use actix_web::{web::Data, App, HttpServer};
 use api::query;
 use database::Database;
@@ -18,10 +20,17 @@ struct Config {
 
 #[tokio::main]
 async fn main() {
+    if env::var("RUST_LOG").is_err() {
+        env::set_var("RUST_LOG", "info")
+    }
+
+    env_logger::init();
+
     let config = match envy::from_env::<Config>() {
         Ok(c) => c,
         Err(e) => {
-            panic!("Couldn't parse environment variables{}", e);
+            error!("Couldn't parse environment variables: {}", e);
+            return;
         }
     };
 

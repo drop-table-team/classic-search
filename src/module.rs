@@ -9,9 +9,13 @@ struct RegisterPayload {
 
 #[derive(Clone, Deserialize)]
 pub struct RegisterResponse {
+    #[serde(rename(deserialize = "mongoAddress"))]
     pub mongo_address: String,
+    #[serde(rename(deserialize = "mongoDatabase"))]
     pub mongo_database: String,
+    #[serde(rename(deserialize = "mongoCollection"))]
     pub mongo_collection: String,
+    #[serde(rename(deserialize = "qdrantAddress"))]
     pub qdrant_address: String,
 }
 
@@ -55,7 +59,21 @@ impl Module {
             );
         }
 
-        Ok(response.json::<RegisterResponse>().await?)
+        let body = response.bytes().await?;
+
+        let response = match serde_json::from_slice(&body) {
+            Ok(r) => r,
+            Err(e) => {
+                bail!(
+                    "Couldn't register module '{}' on backend '{}', error decoding response body: {}",
+                    self.name,
+                    address.as_ref(),
+                    e
+                );
+            }
+        };
+
+        Ok(response)
     }
 
     pub async fn unregister<A: AsRef<str>>(&mut self, address: A) -> anyhow::Result<()> {
