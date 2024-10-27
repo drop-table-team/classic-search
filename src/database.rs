@@ -1,7 +1,6 @@
 use futures::stream::TryStreamExt;
 use mongodb::{bson::doc, error::Error, options::FindOptions, Client, Collection};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DocumentPreview {
