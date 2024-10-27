@@ -133,11 +133,22 @@ impl Database {
                     }
                 },
                 {
-                    "transcription": {
-                        "$regex": search_text,
-                        "$options": "i"
-                    }
+                    "$or": [
+                        {
+                            "transcription": {
+                                "$regex": search_text,
+                                "$options": "i"
+                            },
+                        },
+                        {
+                            "short": {
+                                "$regex": search_text,
+                                "$options": "i"
+                            },
+                        }
+                    ]
                 }
+
             ]
         };
 
