@@ -6,7 +6,7 @@ This plugin provides a classical full text search that allows searching by text 
 
 Use the following command to run `classic-search`:
 
-`ADDRESS="0.0.0.0:8080" MODULE_NAME="classic-search" BACKEND_ADDRESS="http://192.168.0.105:8080" cargo run`
+`ADDRESS="0.0.0.0:8080" MODULE_NAME="classic-search" BACKEND_ADDRESS="http://192.168.0.105:8080" MONGO_ADDRESS="mongodb://192.168.0.111:27017" MONGO_DATABASE="data" MONGO_COLLECTION="entries" cargo run`
 
 ### Environment Variables
 

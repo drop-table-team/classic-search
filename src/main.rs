@@ -1,21 +1,23 @@
 use std::env;
 
+use actix_cors::Cors;
 use actix_web::{web::Data, App, HttpServer};
-use api::query;
+use api::{query, query_tags};
 use database::Database;
 use log::{error, info};
-use module::Module;
 use serde::Deserialize;
 
 pub mod api;
 pub mod database;
-pub mod module;
 
 #[derive(Deserialize, Debug)]
 struct Config {
     address: String,
     module_name: String,
     backend_address: String,
+    mongo_address: String,
+    mongo_database: String,
+    mongo_collection: String,
 }
 
 #[tokio::main]
@@ -36,25 +38,10 @@ async fn main() {
 
     info!("Loaded config: {:?}", config);
 
-    let module = Module::new(config.module_name.clone());
-
-    let response = match module.register(&config.backend_address).await {
-        Ok(r) => r,
-        Err(e) => {
-            error!("{}", e);
-            return;
-        }
-    };
-
-    info!(
-        "Successfuly registered module '{}' on backend '{}'",
-        config.module_name, config.backend_address
-    );
-
     let database = match Database::connect(
-        response.mongo_address.clone(),
-        response.mongo_database.clone(),
-        response.mongo_collection.clone(),
+        config.mongo_address.clone(),
+        config.mongo_database.clone(),
+        config.mongo_collection.clone(),
     )
     .await
     {
@@ -62,7 +49,7 @@ async fn main() {
         Err(e) => {
             error!(
                 "Couldn't connect to MongoDB on {} with database '{}' and collection: '{}': {}",
-                response.mongo_address, response.mongo_database, response.mongo_collection, e
+                config.mongo_address, config.mongo_database, config.mongo_collection, e
             );
             return;
         }
@@ -72,13 +59,20 @@ async fn main() {
 
     info!(
         "Successfuly connected to MongoDB on {} with database '{}' and collection: '{}'",
-        response.mongo_address, response.mongo_database, response.mongo_collection
+        config.mongo_address, config.mongo_database, config.mongo_collection
     );
 
-    HttpServer::new(move || App::new().service(query).app_data(Data::new(database)))
-        .bind(config.address)
-        .unwrap()
-        .run()
-        .await
-        .unwrap();
+    HttpServer::new(move || {
+        let cors = Cors::permissive();
+        App::new()
+            .service(query)
+            .service(query_tags)
+            .app_data(Data::new(database))
+            .wrap(cors)
+    })
+    .bind(config.address)
+    .unwrap()
+    .run()
+    .await
+    .unwrap();
 }

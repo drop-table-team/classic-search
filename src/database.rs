@@ -1,12 +1,14 @@
 use futures::stream::TryStreamExt;
 use mongodb::{bson::doc, error::Error, options::FindOptions, Client, Collection};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DocumentPreview {
+    uuid: String,
     title: String,
-    summary: String,
     tags: Vec<String>,
+    short: String,
 }
 
 pub struct Database {
@@ -48,15 +50,16 @@ impl Database {
         // Erstelle einen MongoDB-Query für Tags
         let query = doc! {
             "tags": {
-                "$all": tags
+                "$in": tags
             }
         };
 
         let options = FindOptions::builder()
             .sort(doc! { "title": 1 })
             .projection(doc! {
+                "uuid": 1,
                 "title": 1,
-                "summary": 1,
+                "short": 1,
                 "tags": 1,
                 "_id": 0  // _id wird standardmäßig zurückgegeben, hier explizit ausgeschlossen
             })
@@ -78,17 +81,27 @@ impl Database {
 
         // Erstelle einen MongoDB-Query mit Textsuche
         let query = doc! {
-            "transcription": {
-                "$regex": search_text,
-                "$options": "i"  // Case-insensitive
+            "$or": [
+                {
+                "transcription": {
+                    "$regex": search_text,
+                    "$options": "i"  // Case-insensitive
+                },
+            }, {
+                "short": {
+                    "$regex": search_text,
+                    "$options": "i"  // Case-insensitive
+                }
             }
+            ]
         };
 
         let options = FindOptions::builder()
             .sort(doc! { "title": 1 })
             .projection(doc! {
+                "uuid": 1,
                 "title": 1,
-                "summary": 1,
+                "short": 1,
                 "tags": 1,
                 "_id": 0  // _id wird standardmäßig zurückgegeben, hier explizit ausgeschlossen
             })
@@ -117,7 +130,7 @@ impl Database {
             "$and": [
                 {
                     "tags": {
-                        "$elemMath": tags
+                        "$in": tags
                     }
                 },
                 {
@@ -132,8 +145,9 @@ impl Database {
         let options = FindOptions::builder()
             .sort(doc! { "title": 1 })
             .projection(doc! {
+                "uuid": 1,
                 "title": 1,
-                "summary": 1,
+                "short": 1,
                 "tags": 1,
                 "_id": 0  // _id wird standardmäßig zurückgegeben, hier explizit ausgeschlossen
             })
