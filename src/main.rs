@@ -13,8 +13,6 @@ pub mod database;
 #[derive(Deserialize, Debug)]
 struct Config {
     address: String,
-    module_name: String,
-    backend_address: String,
     mongo_address: String,
     mongo_database: String,
     mongo_collection: String,
